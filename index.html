@@ -193,7 +193,7 @@
     </nav>
 
     <div class="main-container" id="mainContainer"></div>
-    <div class="footer"><p>七年级16班 · 班级博客 © <span id="year"></span> ❤️ 记录我们的青春时光</p></div>
+    <div class="footer"><p>七年级16班 · 班级博客 © <span id="year"></span> ❤️ 记录我们的老年养老时光</p></div>
     <div id="toastContainer"></div>
     <div id="modalContainer"></div>
 
@@ -317,7 +317,7 @@
                 container.innerHTML = '<p style="text-align:center;color:red;">加载失败，请检查网络</p>';
                 return;
             }
-            let html = `<div class="welcome-banner"><h1>七年级16班 · 班级博客</h1><p>分享学习点滴，记录青春时光</p></div>`;
+            let html = `<div class="welcome-banner"><h1>七年级16班 · 班级博客</h1><p>分享“学习”点滴，记录魔丸时光</p></div>`;
             html += `<div class="toolbar"><div class="section-title">最新帖子 (${posts.length})</div><button class="btn-new-post" onclick="openNewPostModal()">✏️ 发布帖子</button></div>`;
             if (posts.length === 0) html += '<p style="text-align:center;color:#999;">还没有帖子，快来发布第一篇吧！</p>';
             else {
