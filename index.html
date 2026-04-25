@@ -393,7 +393,7 @@
         // ===================== Supabase 初始化 =====================
         const SUPABASE_URL = 'https://oyavsdeskgnaybompqkn.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Upmid5Gp5CDlxb_LRsvzNQ_R-89-w_1';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // ===================== 全局状态 =====================
         let currentProfile = null; // { id, email, display_name, is_admin, avatar_color }
@@ -435,12 +435,12 @@
 
         // ===================== 认证与资料 =====================
         async function refreshProfile() {
-            const { data: { user } } = await supabase.auth.getUser();
+            const { data: { user } } = await window.supabase.auth.getUser();
             if (!user) {
                 currentProfile = null;
                 return;
             }
-            const { data: profile } = await supabase
+            const { data: profile } = await window.supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', user.id)
@@ -461,14 +461,14 @@
                     is_admin: false,
                     avatar_color: getAvatarColor(user.email),
                 };
-                await supabase.from('profiles').insert(newProfile);
+                await window.supabase.from('profiles').insert(newProfile);
                 currentProfile = newProfile;
             }
             renderNavbar();
         }
 
         async function signUp(email, password, displayName) {
-            const { data, error } = await supabase.auth.signUp({ email, password });
+            const { data, error } = await window.supabase.auth.signUp({ email, password });
             if (error) throw error;
             // 创建 profiles 记录
             const profile = {
@@ -477,24 +477,24 @@
                 is_admin: false,
                 avatar_color: getAvatarColor(email),
             };
-            const { error: profileError } = await supabase.from('profiles').insert(profile);
+            const { error: profileError } = await window.supabase.from('profiles').insert(profile);
             if (profileError) throw profileError;
             return data.user;
         }
 
         async function signIn(email, password) {
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await window.supabase.auth.signInWithPassword({ email, password });
             if (error) throw error;
             return data.user;
         }
 
         async function signOut() {
-            await supabase.auth.signOut();
+            await window.supabase.auth.signOut();
         }
 
         // ===================== 数据获取 =====================
         async function fetchPosts() {
-            const { data, error } = await supabase
+            const { data, error } = await window.supabase
                 .from('posts')
                 .select('*')
                 .order('is_pinned', { ascending: false })
@@ -504,7 +504,7 @@
         }
 
         async function fetchPost(postId) {
-            const { data, error } = await supabase
+            const { data, error } = await window.supabase
                 .from('posts')
                 .select('*')
                 .eq('id', postId)
@@ -514,7 +514,7 @@
         }
 
         async function fetchComments(postId) {
-            const { data, error } = await supabase
+            const { data, error } = await window.supabase
                 .from('comments')
                 .select('*')
                 .eq('post_id', postId)
@@ -525,7 +525,7 @@
 
         async function fetchLikeStatus(postId) {
             if (!currentProfile) return false;
-            const { count } = await supabase
+            const { count } = await window.supabase
                 .from('likes')
                 .select('*', { count: 'exact' })
                 .eq('post_id', postId)
@@ -534,7 +534,7 @@
         }
 
         async function getLikeCount(postId) {
-            const { count } = await supabase
+            const { count } = await window.supabase
                 .from('likes')
                 .select('*', { count: 'exact' })
                 .eq('post_id', postId);
@@ -630,7 +630,7 @@
         async function updatePostCounts(posts) {
             for (const post of posts) {
                 const likes = await getLikeCount(post.id);
-                const { count: comments } = await supabase
+                const { count: comments } = await window.supabase
                     .from('comments')
                     .select('*', { count: 'exact' })
                     .eq('post_id', post.id);
@@ -726,16 +726,16 @@
         // ===================== 交互操作 =====================
         async function toggleLike(postId) {
             if (!currentProfile) { showToast('请先登录', 'error'); _openModal('login'); return; }
-            const { data: existing } = await supabase
+            const { data: existing } = await window.supabase
                 .from('likes')
                 .select('*')
                 .eq('post_id', postId)
                 .eq('user_id', currentProfile.id)
                 .maybeSingle();
             if (existing) {
-                await supabase.from('likes').delete().eq('post_id', postId).eq('user_id', currentProfile.id);
+                await window.supabase.from('likes').delete().eq('post_id', postId).eq('user_id', currentProfile.id);
             } else {
-                await supabase.from('likes').insert({ post_id: postId, user_id: currentProfile.id });
+                await window.supabase.from('likes').insert({ post_id: postId, user_id: currentProfile.id });
             }
             // 重新渲染当前视图
             if (currentView === 'detail' && detailPostId === postId) {
@@ -747,7 +747,7 @@
 
         async function togglePin(postId, currentPinned) {
             if (!currentProfile?.is_admin) return;
-            await supabase.from('posts').update({ is_pinned: !currentPinned }).eq('id', postId);
+            await window.supabase.from('posts').update({ is_pinned: !currentPinned }).eq('id', postId);
             if (currentView === 'detail' && detailPostId === postId) {
                 renderPostDetail(postId);
             } else {
@@ -759,7 +759,7 @@
         async function deletePost(postId) {
             if (!currentProfile?.is_admin) return;
             if (!confirm('确定要删除这个帖子吗？')) return;
-            await supabase.from('posts').delete().eq('id', postId);
+            await window.supabase.from('posts').delete().eq('id', postId);
             showToast('帖子已删除', 'success');
             _goBack();
         }
@@ -769,7 +769,7 @@
             const input = document.getElementById('commentInput');
             const content = input.value.trim();
             if (!content) { showToast('请输入内容', 'error'); return; }
-            const { error } = await supabase.from('comments').insert({
+            const { error } = await window.supabase.from('comments').insert({
                 post_id: postId,
                 content: content,
                 author_id: currentProfile.id,
@@ -785,7 +785,7 @@
 
         async function createPost(title, content) {
             if (!currentProfile) { showToast('请先登录', 'error'); _openModal('login'); return; }
-            const { error } = await supabase.from('posts').insert({
+            const { error } = await window.supabase.from('posts').insert({
                 title,
                 content,
                 author_id: currentProfile.id,
@@ -944,7 +944,7 @@
             renderPostList();
 
             // 监听认证状态变化
-            supabase.auth.onAuthStateChange(async (event, session) => {
+            window.supabase.auth.onAuthStateChange(async (event, session) => {
                 await refreshProfile();
                 if (currentView === 'list') renderPostList();
                 else if (detailPostId) renderPostDetail(detailPostId);
